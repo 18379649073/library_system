@@ -1,12 +1,14 @@
 package com.gec.books.controller;
 
 import com.gec.books.pojo.Books;
+import com.gec.books.pojo.BooksPage;
 import com.gec.books.pojo.Result;
 import com.gec.books.service.BookService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,7 +67,7 @@ public class BookController {
      * @param id
      * @return
      */
-    @ApiOperation("通过图书获取图书对象信息")
+    @ApiOperation("通过图书id获取图书对象信息")
     @GetMapping("findBookById")
     public Books findBookById(@ApiParam("图书的id") Integer id){
         System.out.println("findBookById: \n id:"+id);
@@ -100,5 +102,34 @@ public class BookController {
         Result result = this.bookService.deleteBookById(id);
         System.out.println(result);
         return result;
+    }
+
+    /**
+     * 分页获取数据
+     * @param pageNum
+     * @return
+     */
+    @ApiOperation("分页获取数据")
+    @GetMapping("findBooksPage")
+    public BooksPage findBooksPage(@ApiParam("当前页码") Integer pageNum){
+        System.out.println("findBooksPage:\n pageNum:"+pageNum);
+        BooksPage booksPage = this.bookService.findBooksPage(pageNum);
+        System.out.println(booksPage);
+        return booksPage;
+    }
+
+    /**
+     * 分页加模糊查询
+     * @param name
+     * @param pageNum
+     * @return
+     */
+    @ApiOperation("分页加模糊查询")
+    @GetMapping("findBooksByName")
+    public BooksPage findBooksByName(@ApiParam("图书名")  String name,@ApiParam("当前页码")  Integer pageNum){
+        System.out.println("findBooksByName:\n name:"+name+"--pageNum:"+pageNum);
+        BooksPage booksPage = this.bookService.findBooksByName(name,pageNum);
+        System.out.println(booksPage);
+        return booksPage;
     }
 }

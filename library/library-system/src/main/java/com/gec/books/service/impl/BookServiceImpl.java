@@ -1,12 +1,13 @@
 package com.gec.books.service.impl;
 
 import com.gec.books.mapper.BooksMapper;
-import com.gec.books.pojo.Books;
-import com.gec.books.pojo.BooksExample;
-import com.gec.books.pojo.Result;
+import com.gec.books.pojo.*;
 import com.gec.books.service.BookService;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -88,6 +89,35 @@ public class BookServiceImpl implements BookService {
             result.setMessage("删除失败，请联系管理员");
         }
         return result;
+    }
+
+    // 模糊查询加分页
+    @Override
+    public BooksPage findBooksByName(String name, Integer pageNum) {
+        BooksExample example = null;
+        if(name != null && name != ""){
+            example = new BooksExample();
+            BooksExample.Criteria criteria = example.createCriteria();
+            criteria.andNameLike("%"+name+"%");
+        }
+        PageHelper.startPage(pageNum, PageInf.PAGESIZE);
+        Page<Books> page = (Page<Books>)this.booksMapper.selectByExample(example);
+        BooksPage booksPage = new BooksPage();
+        booksPage.setBooks(page.getResult());
+        booksPage.setTotal(page.getTotal());
+        booksPage.setPages(page.getPages());
+        return booksPage;
+    }
+
+    @Override
+    public BooksPage findBooksPage(Integer pageNum) {
+        PageHelper.startPage(pageNum,PageInf.PAGESIZE);
+        Page<Books> page = (Page<Books>)this.booksMapper.selectByExample(null);
+        BooksPage booksPage = new BooksPage();
+        booksPage.setBooks(page.getResult());
+        booksPage.setTotal(page.getTotal());
+        booksPage.setPages(page.getPages());
+        return booksPage;
     }
 
 
