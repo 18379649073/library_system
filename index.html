@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>图书管理</title>
+    <link href="./css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <script src="./js/jquery-3.4.1.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div id="app" style="width: 700px;margin: 0 auto">
+        <table class="table table-striped table-hover" align="center">
+            <caption style="font-size: 32px;">图书系统</caption>
+            <tr>
+                <th colspan="4">
+                    <label>编号<input class="form-control" v-focus :disabled="idflag" type="text" v-model="book.id"></label>
+                    <label>书名<input class="form-control" type="text" v-model.lazy="name"></label>
+                    &nbsp;&nbsp;&nbsp;
+                    <button class="btn btn-info" @click="add" :disabled="nameflag">提交</button>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="4">
+                    <div>
+                        <span>图书数量:</span>
+                        <span >{{sum}}</span>
+                    </div>
+                </th>
+            </tr>
+            
+            <tr>
+                <th>编号</th>
+                <th>书名</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+            <tr :key="item.id" v-for="item in books">
+                <td v-text="item.id"></td>
+                <td v-text="item.name"></td>
+                <td v-text="fm(item.time)"></td>
+                <td >
+                    <a href="" @click.prevent="toEdit(item.id)">修改</a>
+                    <span>|</span>
+                    <a href="" @click.prevent="del(item.id)">删除</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script src="./js/vue.min.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script>
+        // 设置访问地址的公共部分
+        axios.defaults.baseURL="http://localhost:8080/Book";
+        // 设置响应拦截器，将响应的数据直接返回
+        axios.interceptors.response.use(function(res){
+            return res.data;
+        }, function(error){
+            console.log(error);  // 输出错误信息
+        });
+        // 时间格式化
+        Date.prototype.Format = function (fmt) { //author: meizz 
+            var o = {
+            "M+": this.getMonth() + 1, //月份 
+            "d+": this.getDate(), //日 
+            "H+": this.getHours(), //小时 
+            "m+": this.getMinutes(), //分 
+            "s+": this.getSeconds(), //秒 
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+            "S": this.getMilliseconds() //毫秒 
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+        
+        var v = new Vue({
+            el:'#app',
+            data:{
+                idflag: true,  // 编号栏不能操作
+                nameflag:false,
+                name:'',
+                book:{
+                    id:'',
+                    name:'',
+                    time:''
+                },
+                books:[]
+            },
+            methods:{
+                add(){
+                    this.book.name = this.name;
+                    // 修改操作
+                    if(this.book.id != ''){
+                        axios.post('editBookById',{
+                            id:this.book.id,
+                            name:this.name
+                        }).then(ret => {
+                            if(ret.success == true){
+                                this.getBooks();
+                            }else{
+                                alert(ret.message);
+                            }
+                        })
+                    // 添加操作
+                    }else{
+                        axios.post('addBook',this.book).then(ret => {
+                            if(ret.success == true){
+                                // 如果添加成功，刷新整个数据
+                                this.getBooks();
+                            }else{
+                                // 添加失败，弹窗提醒
+                                alert(ret.message);
+                            }
+                        })
+                    }
+                    // 添加或者是修改后将编辑栏制空
+                    this.book={
+                        id:'',
+                        name:'',
+                        time:''
+                    };
+                    this.name = '';
+                    this.nameflag = false;
+                },
+                toEdit(id){
+                    // 首先通过id先查出对应的书本信息
+                    axios.get('findBookById?id='+id).then(ret => {
+                        var bo = ret;
+                        this.book.id = bo.id;
+                        this.book.name = bo.name;
+                        this.name = bo.name;
+                        this.book.time = bo.time;
+                    })
+                },
+                // 删除图书
+                del(id){
+                    axios.get('deleteBookById?id='+id).then(ret => {
+                        if(ret.success == true){
+                            // 刷新数据
+                            this.getBooks();
+                        }else{
+                            alert(tet.message);
+                        }
+                    })
+                },
+                // 调用接口获取数据
+                getBooks(){
+                    axios.get('books').then(ret =>{
+                        // console.log(ret);
+                        this.books=ret;
+                        
+                    });
+                },
+                // 格式化时间方法
+                fm:function(da){
+                    return new Date(da).Format('yyyy-MM-dd HH:mm:ss')
+                }
+                
+            },
+            directives:{
+                // 自定义获取焦点
+                focus:{
+                    inserted:function(el){
+                        el.focus();
+                    }
+                }
+            },
+            computed:{
+                // 计算图书的总数目
+                sum(){
+                    return this.books.length;
+                }
+            },
+            watch:{
+                // 监听当name输入框的值发生改变时，判断新名字是否存在
+                name(val){
+                    var t = this;
+                    axios.get('isExist?name='+val).then(ret => {
+                        var flage = ret.success;
+                        if(flage == true){
+                            t.nameflag = true;
+                        }else{
+                            t.nameflag = false;
+                        }
+                    });
+                }
+            },
+            mounted:function(){
+                // 当模板加载完成后，将后台数据加载进行数数据的初始化工作
+                this.getBooks();
+            }
+        })
+    </script>
+</body>
+</html>
