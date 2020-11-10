@@ -4,9 +4,9 @@
 
 这是一个非常简单的图书管理系统，主要对图书的展示和增删改查操作
 
-### 界面：
+### 界面
 
-![first](images/first.png)
+![a](images/a.png)
 
 ### 主要功能
 
@@ -73,6 +73,14 @@ library文件就是后台服务的原文件
 传入参数：integer id 图书id
 
 返回值：result对象
+
+#### findBooksByName
+
+作用：分页加模糊查询
+
+传入参数：name 图书名 pageNum 分页的当前页
+
+返回值：BooksPage对象主要是分页的数据，加总页数，总记录数
 
 #### Books类
 
@@ -182,6 +190,59 @@ public class Result {
 }
 
 ```
+
+#### BooksPage类
+
+```java
+package com.gec.books.pojo;
+
+import java.util.List;
+
+public class BooksPage {
+
+    private List<Books> books;
+
+    private Long total;
+
+    private Integer pages;
+
+    @Override
+    public String toString() {
+        return "BooksPage{" +
+                "books=" + books +
+                ", total=" + total +
+                ", pages=" + pages +
+                '}';
+    }
+
+    public List<Books> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Books> books) {
+        this.books = books;
+    }
+
+    public Long getTotal() {
+        return total;
+    }
+
+    public void setTotal(Long total) {
+        this.total = total;
+    }
+
+    public Integer getPages() {
+        return pages;
+    }
+
+    public void setPages(Integer pages) {
+        this.pages = pages;
+    }
+}
+
+```
+
+
 
 ### MySQL
 
