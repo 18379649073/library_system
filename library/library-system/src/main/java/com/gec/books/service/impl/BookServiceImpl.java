@@ -10,15 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.awt.print.Book;
 import java.util.Date;
 import java.util.List;
 
 @Service
 @Transactional
 public class BookServiceImpl implements BookService {
+
+    @Value("${myconfig.pageSize}")
+    private Integer pageSize;
 
     @Autowired
     private BooksMapper booksMapper;
@@ -100,7 +101,7 @@ public class BookServiceImpl implements BookService {
             BooksExample.Criteria criteria = example.createCriteria();
             criteria.andNameLike("%"+name+"%");
         }
-        PageHelper.startPage(pageNum, PageInf.PAGESIZE);
+        PageHelper.startPage(pageNum, pageSize);
         Page<Books> page = (Page<Books>)this.booksMapper.selectByExample(example);
         BooksPage booksPage = new BooksPage();
         booksPage.setBooks(page.getResult());
@@ -111,7 +112,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BooksPage findBooksPage(Integer pageNum) {
-        PageHelper.startPage(pageNum,PageInf.PAGESIZE);
+        PageHelper.startPage(pageNum,pageSize);
         Page<Books> page = (Page<Books>)this.booksMapper.selectByExample(null);
         BooksPage booksPage = new BooksPage();
         booksPage.setBooks(page.getResult());
@@ -119,7 +120,6 @@ public class BookServiceImpl implements BookService {
         booksPage.setPages(page.getPages());
         return booksPage;
     }
-
 
 }
 
